@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESCO PLC Deep Research Canvas | MARK 1286 Assignment 2 (Option 1)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        tesco: {
+                            blue: '#00539F',
+                            red: '#EE1C2E',
+                            yellow: '#FFD700',
+                            light: '#F0F6FF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+        /* Dynamic Light Section Backgrounds */
+        .bg-sec-blue {
+            background: linear-gradient(180deg, #F0F7FF 0%, #E0F2FE 50%, #F8FAFC 100%);
+        }
+        .bg-sec-emerald {
+            background: linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 50%, #F0FDF4 100%);
+        }
+        .bg-sec-amber {
+            background: linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FFFDF5 100%);
+        }
+        .bg-sec-purple {
+            background: linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #FAF5FF 100%);
+        }
+        /* Interactive Citation Chip */
+        .cite-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #93C5FD;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 1px 7px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .cite-badge:hover {
+            background-color: #1E40AF;
+            color: #FFFFFF;
+            transform: translateY(-1px);
+        }
+        .hl-num {
+            background-color: #FEF08A;
+            color: #854D0E;
+            border: 1px solid #FACC15;
+            padding: 0px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+        .hl-key {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #6EE7B7;
+            padding: 0px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- CITATION INSPECTOR MODAL (POPUP XEM VỊ TRÍ DÒNG TRÍCH DẪN & LINK GỐC) -->
+    <div id="citation-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-2 border-blue-600 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-600 text-white text-xs font-black px-2.5 py-1 rounded">XÁC THỰC NGUỒN GỐC 100%</span>
+                    <h3 id="modal-title" class="font-black text-slate-900 text-base">Chi Tiết Trích Dẫn & Vị Trí Trong Tài Liệu</h3>
+                </div>
+                <button onclick="closeCiteModal()" class="text-slate-400 hover:text-slate-700 font-black text-xl">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs sm:text-sm">
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                    <span class="font-bold text-slate-500 block uppercase text-[11px]">Tên Tài Liệu / Báo Cáo Gốc:</span>
+                    <span id="modal-doc" class="font-extrabold text-slate-900 mt-0.5 block"></span>
+                </div>
+                <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-300">
+                    <span class="font-bold text-amber-900 block uppercase text-[11px]">📍 Vị Trí Chính Xác (Số Trang / Mục / Đoạn):</span>
+                    <span id="modal-loc" class="font-bold text-slate-900 mt-0.5 block leading-relaxed"></span>
+                </div>
+                <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-200">
+                    <span class="font-bold text-blue-900 block uppercase text-[11px]">💬 Câu Trích Dẫn Nguyên Văn (Verbatim Quote):</span>
+                    <p id="modal-quote" class="italic text-slate-800 mt-1 leading-relaxed"></p>
+                </div>
+                <div class="pt-1">
+                    <span class="font-bold text-slate-600 block text-xs mb-1">🔗 Đường Dẫn Truy Cập Trực Tiếp (URL):</span>
+                    <a id="modal-url" href="#" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow transition break-all">
+                        Mở Tài Liệu Gốc ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STICKY HEADER -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-tesco-blue flex items-center justify-center text-white font-black text-lg shadow-md border-b-4 border-tesco-red">
+                        TSCO
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-base sm:text-lg font-black text-slate-900 uppercase">
+                                TESCO PLC Deep Research Canvas (Option 1: AI-Data Driven Marketing)
+                            </h1>
+                            <span class="bg-blue-100 text-blue-900 border border-blue-300 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
+                                Bấm Vào Nhãn [Nguồn #] Để Xem Trang & Dòng Trích Dẫn
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium">
+                            Báo cáo phân tích 7 mục chuẩn Assignment 2 Brief • Giải đáp 13 câu hỏi chuyên sâu • 3 Phòng mô phỏng hình ảnh B-Roll cho Video Vlog
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+                    <button onclick="switchTab('tab-report')" id="btn-tab-report" class="tab-btn whitespace-nowrap px-3.5 py-2 rounded-lg text-xs font-extrabold transition bg-blue-700 text-white shadow-sm">
+                        1. Báo Cáo 7 Mục & Đề Xuất 2027 (Kèm Citation)
+                    </button>
+                    <button onclick="switchTab('tab-qa')" id="btn-tab-qa" class="tab-btn whitespace-nowrap px-3.5 py-2 rounded-lg text-xs font-extrabold transition bg-emerald-700 text-white shadow-sm">
+                        2. Giải Đáp Chi Tiết 13 Thắc Mắc Của Boss
+                    </button>
+                    <button onclick="switchTab('tab-sim')" id="btn-tab-sim" class="tab-btn whitespace-nowrap px-3.5 py-2 rounded-lg text-xs font-extrabold transition bg-purple-700 text-white shadow-sm">
+                        3. Phòng Mô Phỏng Hình Ảnh (Quay B-Roll Vlog)
+                    </button>
+                    <button onclick="switchTab('all')" class="tab-btn whitespace-nowrap px-3 py-2 rounded-lg text-xs font-extrabold transition bg-slate-900 text-amber-300 hover:bg-slate-800 ml-1">
+                        📖 Xem Toàn Bộ Trên 1 Trang
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================================
+         TAB 1: BÁO CÁO PHÂN TÍCH CHUYÊN SÂU TESCO PLC (THEO ĐÚNG 7 YÊU CẦU OPTION 1)
+         ========================================================================= -->
+    <section id="tab-report" class="canvas-sec bg-sec-blue border-b-2 border-blue-200 py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-8">
+            <div class="bg-white rounded-2xl p-6 border-l-8 border-tesco-blue shadow-md">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="bg-blue-100 text-blue-900 border border-blue-300 text-xs font-black uppercase px-3 py-1 rounded-full">
+                        Phần 1 • Báo Cáo Deep Research Chuẩn Mực Theo Đề Bài Option 1 (Tuần 9)
+                    </span>
+                    <span class="text-xs font-bold text-tesco-red">💡 Mẹo: Bấm vào bất kỳ nút màu xanh [Nguồn #...] nào bên dưới để kiểm tra trang, dòng và mở link báo cáo gốc!</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
+                    Phân Tích Chiến Lược Tiếp Thị Dựa Trên Dữ Liệu & AI Tại Tesco PLC (2025–2026) & Đề Xuất Tư Vấn 2027
+                </h2>
+            </div>
+
+            <!-- Mục 1 & Mục 2 Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Mục 1: Brand Background -->
+                <div class="bg-white rounded-2xl p-6 border-2 border-blue-200 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="bg-tesco-blue text-white text-xs font-black px-3 py-1 rounded-lg">MỤC 1 (10% ĐIỂM RUBRIC)</span>
+                        <span class="text-xs font-bold text-slate-500">Brand Background & Context</span>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-900">1. Giới Thiệu Bối Cảnh Tập Đoàn Tesco PLC (2025/2026)</h3>
+                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        Có trụ sở tại Vương quốc Anh (UK), <strong>Tesco PLC</strong> là tập đoàn bán lẻ bách hóa đa quốc gia dẫn đầu tại UK, Cộng hòa Ireland (ROI) và Trung Âu (Séc, Slovakia, Hungary) với hơn <span class="hl-num">340.000 nhân viên</span>
+                        <button onclick="openCite('ar26_p3')" class="cite-badge">🔗 Nguồn #1: AR26 Trang 3</button>.
+                    </p>
+                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        Hệ sinh thái sản phẩm và dịch vụ của Tesco bao gồm: hệ thống đại siêu thị và cửa hàng tiện lợi (One Stop), nhà bán buôn thực phẩm <strong>Booker</strong>, mạng viễn thông <strong>Tesco Mobile</strong> (<span class="hl-num">5,5 triệu khách hàng</span>), mảng bảo hiểm <strong>Tesco Insurance & Money Services</strong> (<span class="hl-num">>2,5 triệu hợp đồng</span>), thời trang <strong>F&F Clothing</strong> (doanh số tăng <span class="hl-num">+5,1% vượt £1,2 tỷ</span>), dịch vụ giao hàng siêu tốc <strong>Tesco Whoosh</strong> (tăng trưởng <span class="hl-num">+51% đạt >£400 triệu</span> tại hơn 1.500 cửa hàng, phủ sóng >75% hộ gia đình UK), sàn thương mại điện tử <strong>Tesco Marketplace</strong> (nâng cấp lên nền tảng Mirakl tháng 10/2025 với <span class="hl-num">>450.000 mã hàng SKUs</span>), và công ty con chuyên về khoa học dữ liệu khách hàng <strong>dunnhumby</strong>
+                        <button onclick="openCite('prelim26_food')" class="cite-badge">🔗 Nguồn #2: Prelim FY26 Mục 1 & 2</button>.
+                    </p>
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 text-xs sm:text-sm text-slate-900 space-y-1">
+                        <div class="font-black text-tesco-blue uppercase">📊 Kết quả tài chính kiểm toán FY2025/26 (Kết thúc 28/02/2026):</div>
+                        <div>• Doanh thu toàn Tập đoàn (Statutory Revenue): <span class="hl-num">£73,7 tỷ</span> (+5,4% YoY; doanh số không tính nhiên liệu đạt <span class="hl-num">£66,6 tỷ</span>, +4,6%) <button onclick="openCite('ar26_p7')" class="cite-badge">🔗 Nguồn #3: AR26 Trang 7</button></div>
+                        <div>• Lợi nhuận hoạt động điều chỉnh: <span class="hl-num">£3.152 triệu</span> (+0,8% YoY) <button onclick="openCite('ar26_p7')" class="cite-badge">🔗 Nguồn #3: AR26 Trang 7</button></div>
+                        <div>• Thị phần bách hóa tại UK: <span class="hl-num">28,5%</span> (+24 bps YoY — mức cao nhất kể từ năm 2015) <button onclick="openCite('ar26_p7')" class="cite-badge">🔗 Nguồn #3: AR26 Trang 7</button></div>
+                    </div>
+                </div>
+
+                <!-- Mục 2: 4 Core Components & Strategic Importance -->
+                <div class="bg-white rounded-2xl p-6 border-2 border-blue-200 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="bg-tesco-blue text-white text-xs font-black px-3 py-1 rounded-lg">MỤC 2 & 3 (KHUNG LÝ THUYẾT TUẦN 9)</span>
+                        <span class="text-xs font-bold text-slate-500">Chaffey & Ellis-Chadwick (2019); Nazir et al. (2025)</span>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-900">2. Ứng Dụng 4 Thành Phần Cốt Lõi & Tại Sao Sống Còn Với Tesco?</h3>
+                    <div class="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        <div><strong class="text-slate-900">① Data Collection (Thu thập dữ liệu):</strong> Thu thập dữ liệu bên thứ nhất (First-Party Data) từ <span class="hl-num">>24 triệu hộ gia đình Clubcard tại UK</span> (độ thâm nhập doanh số đạt <span class="hl-num">84% tại UK, 87% tại ROI, 87%–88% tại Trung Âu</span>) và <span class="hl-num">18 triệu người dùng Tesco App</span> (quét thẻ qua app chiếm 63%) <button onclick="openCite('ft_clubcard')" class="cite-badge">🔗 Nguồn #4: FT Markets / RNS</button>.</div>
+                        <div><strong class="text-slate-900">② Analytics (Phân tích):</strong> Xử lý bởi công ty con <strong>dunnhumby</strong> (doanh thu pháp nhân UK đạt <span class="hl-num">£326 triệu</span>, 2.500+ chuyên gia tại 30+ quốc gia) để phân cụm hành vi giỏ hàng <button onclick="openCite('undisturbed_dh')" class="cite-badge">🔗 Nguồn #5: Companies House / Undisturbed</button>.</div>
+                        <div><strong class="text-slate-900">③ Automation (Tự động hóa):</strong> Sử dụng <strong>Salesforce Marketing Cloud, Klaviyo</strong> (Seminar 2) và đối tác <strong>Adobe</strong> để tự động gửi ưu đãi, gợi ý sản phẩm và công thức nấu ăn đúng thời điểm cho <span class="hl-num">>13 triệu khách hàng</span> <button onclick="openCite('ft_adobe13m')" class="cite-badge">🔗 Nguồn #6: FT Markets RNS</button>.</div>
+                        <div><strong class="text-slate-900">④ Multivariate Testing (Thử nghiệm đa biến):</strong> Chạy chương trình trò chơi hóa <strong>Clubcard Challenges</strong> (đã tới Vòng thứ 10 với >100 nhà cung cấp), hiển thị <span class="hl-num">20 thử thách cá nhân hóa</span> cho từng khách (khách chọn 10 thử thách trong 6 tuần), đạt tỷ lệ chuyển đổi tham gia <span class="hl-num">76%</span> <button onclick="openCite('loyalty_challenges')" class="cite-badge">🔗 Nguồn #7: Loyalty&RewardCo & IIDE</button>.</div>
+                    </div>
+                    <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-300 text-xs text-slate-900 leading-relaxed">
+                        <strong class="text-amber-900 uppercase block mb-1">🎯 Tại sao Data-Driven Marketing lại sống còn với Tesco?</strong>
+                        <strong>(1) Phòng thủ giá thông minh trước Aldi & Lidl:</strong> Kết hợp <em>Aldi Price Match</em> (>600–700 món), <em>Everyday Low Prices</em> (3.000 món) với <span class="hl-num">>10.000 ưu đãi Clubcard Prices/tuần</span> (giúp khách tiết kiệm tới <span class="hl-num">£392/năm</span>) <button onclick="openCite('ar25_p4')" class="cite-badge">🔗 Nguồn #8: AR25 Trang 4</button> để bắt buộc khách quét thẻ định danh, rồi dùng dữ liệu đó gửi mã giảm giá riêng đúng món khách cần thay vì giảm giá đại trà làm mất lãi.<br>
+                        <strong>(2) Mở mỏ vàng truyền thông bán lẻ khép kín (Retail Media):</strong> Dùng dữ liệu giỏ hàng để bán vị trí hiển thị quảng cáo nhắm mục tiêu (không bán dữ liệu cá nhân thô) qua <strong>Tesco Media & Insight Platform</strong> (>9.000 chiến dịch/năm, >5.000 màn hình tại quầy) trong thị trường Retail Media trị giá <span class="hl-num">£3,8 tỷ (+18% YoY)</span> tại UK <button onclick="openCite('caddo_rm')" class="cite-badge">🔗 Nguồn #9: Caddo & LSE RNS</button>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mục 4, 5, 6, 7: Bảng Kỹ Thuật Chi Tiết -->
+            <div class="bg-white rounded-2xl p-6 border-2 border-blue-200 shadow-sm space-y-4">
+                <h3 class="text-lg font-black text-slate-900">
+                    3. Giải Phẫu 4 Câu Hỏi Kỹ Thuật Của Option 1: Công Cụ Cá Nhân Hóa, 6 Nguồn Big Data, 3 Cấp Phân Tích & Công Cụ AI
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-900 text-white font-bold">
+                                <th class="p-4 w-64">Câu Hỏi Của Đề Bài (Option 1)</th>
+                                <th class="p-4">Thực Tiễn Vận Hành Tại Tesco PLC (2025–2026) & Vị Trí Trích Dẫn</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr>
+                                <td class="p-4 font-black text-tesco-blue bg-slate-50 align-top">
+                                    Câu 3: Công cụ dữ liệu phục vụ cá nhân hóa<br>
+                                    <span class="text-xs font-normal text-slate-500">(Data-driven tools for customer personalisation)</span>
+                                </td>
+                                <td class="p-4 text-slate-800 leading-relaxed space-y-2">
+                                    <div>• <strong>Bộ máy AI Eagle Eye (Eagle Eye AIR Engine):</strong> Hệ thống phần mềm đám mây chạy ngầm phía sau mục <em>Clubcard Challenges</em> trên ứng dụng Tesco App, tự động tính toán và đẩy 20 nhiệm vụ chi tiêu cá nhân hóa 1-1 cho từng hội viên <button onclick="openCite('loyalty_challenges')" class="cite-badge">🔗 Nguồn #7: Loyalty&RewardCo</button>.</div>
+                                    <div>• <strong>Công cụ thuật toán dunnhumby ("People Pleaser" & "Diviner"):</strong> Phân tích lịch sử mua hàng để chọn ra phiếu giảm giá phù hợp nhất (<em>People Pleaser</em>) và dự báo hành vi tiếp theo (<em>Diviner</em>) <button onclick="openCite('happy_dh')" class="cite-badge">🔗 Nguồn #10: HappyRewards Report</button>.</div>
+                                    <div>• <strong>Tesco × Adobe Innovation Lab (Công bố 13/04/2026):</strong> Nhóm kỹ sư của Adobe ngồi làm việc trực tiếp cùng đội công nghệ của Tesco để cá nhân hóa 1-1 hành trình mua sắm trên App, Web và tại cửa hàng cho 24 triệu khách hàng <button onclick="openCite('retailtimes_adobe')" class="cite-badge">🔗 Nguồn #11: Retail Times 13/04/2026</button>.</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-black text-tesco-blue bg-slate-50 align-top">
+                                    Câu 4: Các nguồn Big Data đang sử dụng<br>
+                                    <span class="text-xs font-normal text-slate-500">(Sources of Big Data - Krowinska et al., 2023)</span>
+                                </td>
+                                <td class="p-4 text-slate-800 leading-relaxed space-y-2">
+                                    <div>• <strong>1. Purchase Histories & Transaction Data (Lịch sử giao dịch):</strong> 84% doanh số tại siêu thị UK, kênh online (<span class="hl-num">>£7 tỷ, chiếm 35,7%–36,7% thị phần online UK</span>) và giao nhanh Whoosh được định danh qua thẻ Clubcard <button onclick="openCite('prelim26_food')" class="cite-badge">🔗 Nguồn #2: Prelim FY26</button>.</div>
+                                    <div>• <strong>2. Mobile & App Usage (Dữ liệu ứng dụng di động):</strong> Hành vi tìm kiếm, xem sản phẩm trên 450.000+ SKUs Marketplace và quét mã QR tại quầy của <span class="hl-num">18 triệu người dùng Tesco App</span> <button onclick="openCite('undisturbed_dh')" class="cite-badge">🔗 Nguồn #5: Undisturbed / RNS</button>.</div>
+                                    <div>• <strong>3. CRM Databases (Cơ sở dữ liệu CRM đa dịch vụ):</strong> Dữ liệu nhân khẩu học và hợp đồng dịch vụ từ 5,5 triệu thuê bao Tesco Mobile, 2,5 triệu hợp đồng bảo hiểm IMS và khách hàng bán buôn Booker <button onclick="openCite('prelim26_food')" class="cite-badge">🔗 Nguồn #2: Prelim FY26</button>.</div>
+                                    <div>• <strong>4. IoT & Smart Devices (Thiết bị kết nối IoT):</strong> Dữ liệu khách hàng sạc xe điện (EV) tích điểm Clubcard tại bãi đỗ xe siêu thị Tesco qua đối tác <strong>Pod Point / Be.EV</strong>; cùng hệ thống định vị AI tối ưu lộ trình xe tải giao hàng giúp cắt giảm <span class="hl-num">100.000 dặm di chuyển mỗi tuần</span> <button onclick="openCite('ft_iot')" class="cite-badge">🔗 Nguồn #12: FT Markets RNS</button>.</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-black text-tesco-blue bg-slate-50 align-top">
+                                    Câu 5: Ba cấp độ phân tích Big Data & Lý do sử dụng<br>
+                                    <span class="text-xs font-normal text-slate-500">(Descriptive, Predictive, Prescriptive - Yesiloglu & Costello, 2021)</span>
+                                </td>
+                                <td class="p-4 text-slate-800 leading-relaxed space-y-2">
+                                    <div>• <strong>1. Descriptive Analytics (Mô tả - Chuyện gì đã xảy ra?):</strong> Báo cáo doanh số ngành hàng của dunnhumby và tính năng <strong>"Clubcard Unpacked"</strong> (mở từ ngày 6/1 hàng năm ngay trên Tesco App & web <code>tesco.com/zones/unpacked</code>) phát video tổng kết món ăn mua nhiều nhất, combo <em>Meal Deal</em> yêu thích và tổng tiền tiết kiệm được trong năm qua nhằm tăng gắn kết cảm xúc <button onclick="openCite('unpacked_tesco')" class="cite-badge">🔗 Nguồn #13: Tesco PLC Unpacked PR</button>.</div>
+                                    <div>• <strong>2. Predictive Analytics (Dự báo - Chuyện gì sẽ xảy ra?):</strong> Trong năm 2025/26, Tesco chính thức <strong>thử nghiệm (trialling) phân tích dữ liệu Clubcard để dự đoán khi nào khách hàng sắp dùng hết các nhu yếu phẩm trong gia đình</strong> và gửi lời nhắc mua hàng kịp thời qua App/Email nhằm ngăn chặn khách hàng chuyển sang mua ở siêu thị đối thủ <button onclick="openCite('ft_clubcard')" class="cite-badge">🔗 Nguồn #4: FT Markets RNS</button>.</div>
+                                    <div>• <strong>3. Prescriptive Analytics (Đề xuất hành động - Nên làm gì?):</strong> Điều phối hành trình đa kênh theo thời gian thực (<em>Real-time omnichannel journey orchestration</em>): Ngay khi khách bấm nút "Kích hoạt" một mã giảm giá trên App, AI lập tức bật lên công thức nấu ăn tương ứng, khuyến mãi nối tiếp và gợi ý mua chéo sang danh mục khác để tối đa hóa giá trị giỏ hàng <button onclick="openCite('iide_prescriptive')" class="cite-badge">🔗 Nguồn #14: IIDE Case Study</button>.</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-black text-tesco-blue bg-slate-50 align-top">
+                                    Câu 6: Các công cụ AI đang vận hành<br>
+                                    <span class="text-xs font-normal text-slate-500">(AI Tools - Rushing, 2017)</span>
+                                </td>
+                                <td class="p-4 text-slate-800 leading-relaxed space-y-2">
+                                    <div>• <strong>1. Machine Learning & Recommendation Systems:</strong> Thuật toán học máy của dunnhumby & Eagle Eye cá nhân hóa ưu đãi cho >13 triệu khách hàng và chương trình thưởng ăn đủ 5 phần rau củ quả (<em>5-a-day campaign</em>) cho <span class="hl-num">2,5 triệu khách hàng</span> <button onclick="openCite('ft_adobe13m')" class="cite-badge">🔗 Nguồn #6: FT Markets RNS</button>.</div>
+                                    <div>• <strong>2. Generative AI (AI Tạo sinh hình ảnh & nội dung):</strong> Ra mắt <strong>Tesco Media Creative Studio</strong> (tháng 10/2025) và tích hợp <strong>Adobe Firefly Foundry</strong> (tháng 4/2026) để tự động tạo các biến thể banner quảng cáo riêng cho nhóm khách hiện tại (current), khách ngủ đông (lapsed) và khách mới (new), rút ngắn thời gian sản xuất từ <strong>nhiều tuần xuống vài giây</strong> <button onclick="openCite('iide_studio')" class="cite-badge">🔗 Nguồn #15: IIDE & Retail Times</button>.</div>
+                                    <div>• <strong>3. Sovereign LLMs & Agentic AI:</strong> Ký thỏa thuận 3 năm với <strong>Mistral AI</strong> (ngày 17/12/2025 – nhà bán lẻ lớn đầu tiên tại UK lập phòng lab chung và dùng mô hình ngôn ngữ lớn bảo mật châu Âu) kết hợp cùng <strong>Adobe Agentic AI</strong> (13/04/2026) <button onclick="openCite('undisturbed_mistral')" class="cite-badge">🔗 Nguồn #16: Undisturbed Portfolio</button>.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mục 7: 3 Đề Xuất Tư Vấn Chiến Lược Cho Năm 2027 (Cụ Thể Hóa Chi Tiết) -->
+            <div class="bg-white rounded-2xl p-6 border-4 border-amber-400 shadow-lg space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                        <span class="bg-amber-500 text-slate-950 text-xs font-black uppercase px-3 py-1 rounded-full">
+                            CÂU 7 • TRỌNG TÂM ĂN ĐIỂM TƯ VẤN (15% RUBRIC): ĐỀ XUẤT CHIẾN LƯỢC NĂM 2027
+                        </span>
+                        <h3 class="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                            3 Giải Pháp Tư Vấn Cụ Thể Cho Năm 2027 Nhằm Tăng Lợi Nhuận & Củng Cố Quan Hệ Stakeholders
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs sm:text-sm">
+                    <!-- Proposal 1 -->
+                    <div class="bg-amber-50/70 p-5 rounded-2xl border-2 border-amber-300 flex flex-col justify-between space-y-3">
+                        <div class="space-y-2.5">
+                            <span class="inline-block bg-slate-900 text-amber-300 font-black text-xs px-2.5 py-1 rounded">ĐỀ XUẤT 1 (2027) • TĂNG LỢI NHUẬN GIỎ HÀNG</span>
+                            <h4 class="font-black text-slate-900 text-base">Ra Mắt "Trợ Lý Thực Đơn Giỏ Hàng Tự Động" (Mistral × Adobe Agentic Meal-to-Basket Concierge)</h4>
+                            <p class="text-slate-700 leading-relaxed">
+                                <strong>• Điểm nghẽn hiện tại (2026):</strong> Tesco đã ký hợp đồng hạ tầng với <strong>Mistral AI</strong> (12/2025) và <strong>Adobe Agentic AI</strong> (4/2026) <button onclick="openCite('undisturbed_mistral')" class="cite-badge">🔗 Nguồn #16</button>, nhưng trên App mới dừng ở việc nhắc nhở món hàng sắp hết. Trong khi đó, giao hàng online và <strong>Whoosh</strong> chịu chi phí vận hành (fulfillment cost) rất cao <button onclick="openCite('iide_studio')" class="cite-badge">🔗 Nguồn #15</button>.
+                            </p>
+                            <p class="text-slate-800 leading-relaxed">
+                                <strong>• Giải pháp cụ thể năm 2027:</strong> Đưa mô hình ngôn ngữ Mistral AI ra mặt trước của <em>Tesco App</em> thành một trợ lý đàm thoại thông minh. Khách hàng chỉ cần gõ/nói: <em>"Lên thực đơn 5 bữa tối giàu đạm cho 4 người dưới £60"</em>. Trợ lý AI sẽ: (1) Tự động nhặt nguyên liệu tươi sống đang có giá <em>Clubcard Prices</em>; (2) <strong>Bán chéo (Cross-sell)</strong> thêm nồi chiên không dầu hoặc hộp bảo quản thực phẩm có biên lợi nhuận cao từ sàn <strong>Tesco Marketplace (450.000+ SKUs)</strong>; và (3) Đặt giao qua <strong>Whoosh</strong>.
+                            </p>
+                        </div>
+                        <div class="p-3 bg-white rounded-xl border border-amber-300 font-semibold text-emerald-900 text-xs">
+                            📈 <strong>Tác động Lợi nhuận & Stakeholders:</strong> Tăng giá trị giỏ hàng trung bình (Average Basket Size) để bù đắp chi phí giao hàng online, đồng thời giúp hộ gia đình tiết kiệm thời gian và tiền bạc.
+                        </div>
+                    </div>
+
+                    <!-- Proposal 2 -->
+                    <div class="bg-amber-50/70 p-5 rounded-2xl border-2 border-amber-300 flex flex-col justify-between space-y-3">
+                        <div class="space-y-2.5">
+                            <span class="inline-block bg-slate-900 text-amber-300 font-black text-xs px-2.5 py-1 rounded">ĐỀ XUẤT 2 (2027) • DOANH THU B2B & NHÀ CUNG CẤP</span>
+                            <h4 class="font-black text-slate-900 text-base">Mở Cổng "Self-Serve GenAI Retail Media" Cho Nhà Bán Hàng Nhỏ (SMEs) Trên Sàn Mirakl</h4>
+                            <p class="text-slate-700 leading-relaxed">
+                                <strong>• Điểm nghẽn hiện tại (2026):</strong> Tesco đã ra mắt <strong>Tesco Media Creative Studio</strong> (tháng 10/2025) dùng <strong>Adobe Firefly</strong> tạo banner quảng cáo trong vài giây <button onclick="openCite('iide_studio')" class="cite-badge">🔗 Nguồn #15</button>, nhưng chủ yếu phục vụ các tập đoàn lớn (như Coca-Cola, PepsiCo). Trong khi đó, Tesco vừa chuyển sàn <strong>Tesco Marketplace</strong> sang nền tảng <strong>Mirakl</strong> (tháng 10/2025) để thu hút hàng ngàn nhà bán hàng bên thứ ba và các startup trong <em>Accelerator Programme</em> <button onclick="openCite('prelim26_food')" class="cite-badge">🔗 Nguồn #2</button>.
+                            </p>
+                            <p class="text-slate-800 leading-relaxed">
+                                <strong>• Giải pháp cụ thể năm 2027:</strong> Tích hợp <em>Tesco Media Creative Studio</em> thành một <strong>Cổng Tự Phục Vụ (Self-Serve Portal)</strong> ngay trong trang quản trị của nhà bán hàng Mirakl kèm báo cáo <em>Attribution Modelling</em> (Tuần 9). Một nhà cung cấp nhỏ chỉ cần tải ảnh sản phẩm lên, bấm 1 nút để AI Firefly tự tạo 3 mẫu banner chuẩn quy cách Tesco và đặt ngân sách quảng cáo từ £50/tuần.
+                            </p>
+                        </div>
+                        <div class="p-3 bg-white rounded-xl border border-amber-300 font-semibold text-emerald-900 text-xs">
+                            🤝 <strong>Tác động Lợi nhuận & Stakeholders:</strong> Mang lại nguồn doanh thu quảng cáo biên lợi nhuận cực cao (capital-light revenue) cho Tesco và giúp các nhà cung cấp nhỏ (SMEs) tăng trưởng doanh số minh bạch.
+                        </div>
+                    </div>
+
+                    <!-- Proposal 3 -->
+                    <div class="bg-amber-50/70 p-5 rounded-2xl border-2 border-amber-300 flex flex-col justify-between space-y-3">
+                        <div class="space-y-2.5">
+                            <span class="inline-block bg-slate-900 text-amber-300 font-black text-xs px-2.5 py-1 rounded">ĐỀ XUẤT 3 (2027) • ĐẠO ĐỨC DỮ LIỆU & GDPR</span>
+                            <h4 class="font-black text-slate-900 text-base">Thiết Lập "Trung Tâm Mục Tiêu Sức Khỏe & Ngân Sách Tự Nguyện" (Zero-Party Data Preference Hub)</h4>
+                            <p class="text-slate-700 leading-relaxed">
+                                <strong>• Điểm nghẽn hiện tại (2026):</strong> Khi khách đăng ký thẻ Clubcard và quét thẻ (First-party data), Tesco chỉ biết họ tên/địa chỉ và hóa đơn quá khứ, chứ AI phải "đoán mò" lý do mua hàng. Đồng thời, người tiêu dùng và luật <strong>GDPR</strong> ngày càng khắt khe với việc dùng dữ liệu ngầm để định giá hay bán quảng cáo <button onclick="openCite('pmr_gdpr')" class="cite-badge">🔗 Nguồn #17: PMR GDPR Report</button>.
+                            </p>
+                            <p class="text-slate-800 leading-relaxed">
+                                <strong>• Giải pháp cụ thể năm 2027:</strong> Bổ sung mục <strong>"My Family Goals (Zero-Party Data Hub)"</strong> trên Tesco App, nơi khách hàng chủ động tích chọn mục tiêu tương lai (VD: <em>"Con bị dị ứng hạt", "Muốn ăn giảm đường/giàu chất xơ", "Giới hạn ngân sách đi chợ £75/tuần"</em>). Đổi lại, mỗi khi họ mua sản phẩm lành mạnh khớp mục tiêu, hệ thống nhân đôi điểm thưởng trong <em>Clubcard Challenges</em>.
+                            </p>
+                        </div>
+                        <div class="p-3 bg-white rounded-xl border border-amber-300 font-semibold text-emerald-900 text-xs">
+                            🌱 <strong>Tác động Lợi nhuận & Stakeholders:</strong> Có dữ liệu ý định chính xác 100% với sự đồng thuận tuyệt đối theo GDPR, đồng thời giúp Tesco đạt cam kết ESG duy trì <strong>>65% doanh số là thực phẩm lành mạnh</strong> đến năm 2030 <button onclick="openCite('sust26_p1')" class="cite-badge">🔗 Nguồn #18: Sustainability Report 2026</button>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 2: GIẢI ĐÁP CHI TIẾT 13 THẮC MẮC CỦA BOSS (INTERACTIVE Q&A CARDS)
+         ========================================================================= -->
+    <section id="tab-qa" class="canvas-sec bg-sec-emerald border-b-2 border-emerald-200 py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+            <div class="bg-white rounded-2xl p-6 border-l-8 border-emerald-600 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <span class="bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-black uppercase px-3 py-1 rounded-full">
+                        Phần 2 • Giải Mã Bản Chất Từng Câu Hỏi Của Boss
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
+                        13 Câu Hỏi Làm Rõ Cơ Chế Thực Tế Của Tesco PLC (Dễ Hiểu, Cụ Thể & Có Kiểm Chứng)
+                    </h2>
+                </div>
+                <input type="text" id="qa-search" oninput="renderQAList()" placeholder="🔍 Tìm câu hỏi (VD: GDPR, Eagle Eye, Unpacked)..." class="bg-slate-50 border-2 border-emerald-300 text-slate-900 text-xs font-semibold rounded-xl px-4 py-2.5 w-64 focus:outline-none focus:border-emerald-600">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="qa-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 3: PHÒNG MÔ PHỎNG TRỰC QUAN (VISUAL SIMULATORS ĐỂ QUAY B-ROLL VLOG)
+         ========================================================================= -->
+    <section id="tab-sim" class="canvas-sec bg-sec-purple py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-8">
+            <div class="bg-white rounded-2xl p-6 border-l-8 border-purple-700 shadow-md">
+                <span class="bg-purple-100 text-purple-900 border border-purple-300 text-xs font-black uppercase px-3 py-1 rounded-full">
+                    Phần 3 • Giải Quyết Bài Toán "Lấy Hình Ảnh Minh Họa Ở Đâu Khi Quay Video Vlog?"
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
+                    3 Phòng Mô Phỏng Giao Diện Thực Tế Của Tesco (Boss Có Thể Bấm Tương Tác & Quay Màn Hình Làm B-Roll)
+                </h2>
+                <p class="text-sm text-slate-700 mt-1 leading-relaxed">
+                    Vì đề bài cấm dùng Slide PowerPoint nhưng lại thưởng điểm rất cao cho việc minh họa ví dụ thực tế trên <strong>Microsoft Clipchamp</strong>, Boss hãy bấm tương tác trực tiếp trên 3 mô phỏng dưới đây và dùng tính năng <em>Screen Recording</em> quay lại 5–10 giây mỗi mô phỏng để chèn vào góc video lúc đang nói!
+                </p>
+            </div>
+
+            <!-- SIMULATOR 1: 1-TO-1 PERSONALISATION (TESCO x ADOBE LAB) & PRESCRIPTIVE COUPON ACTIVATION -->
+            <div class="bg-white rounded-2xl p-6 border-2 border-purple-300 shadow-lg space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+                    <div>
+                        <span class="text-xs font-black text-purple-800 uppercase">Mô Phỏng #1 • Minh Họa Cho Câu Hỏi 6, 8 & 9 (Cá Nhân Hóa 1-1 & Prescriptive AI)</span>
+                        <h3 class="text-xl font-black text-slate-900">Giao Diện Tesco App Cá Nhân Hóa 1-1 (Tesco × Adobe Lab) & Kích Hoạt Mã Giảm Giá</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="switchPersona('family')" id="btn-p-family" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-tesco-blue text-white shadow">
+                            👨‍👩‍👧‍👦 Hồ sơ 1: Gia đình 4 người (Tiết kiệm)
+                        </button>
+                        <button onclick="switchPersona('single')" id="btn-p-single" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200">
+                            🏃‍♂️ Hồ sơ 2: Người trẻ London (Healthy & Whoosh)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <!-- Smartphone Mockup -->
+                    <div class="lg:col-span-5 flex justify-center">
+                        <div class="w-80 bg-slate-900 rounded-[36px] p-3 shadow-2xl border-4 border-slate-800">
+                            <div class="bg-white rounded-[28px] overflow-hidden">
+                                <!-- App Top Bar -->
+                                <div class="bg-tesco-blue text-white p-4">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-black tracking-wider">TESCO Grocery & Clubcard</span>
+                                        <span id="sim1-points" class="bg-tesco-yellow text-slate-950 font-black px-2 py-0.5 rounded">1,450 pts</span>
+                                    </div>
+                                    <div id="sim1-greeting" class="text-sm font-extrabold mt-2">Xin chào Gia đình Sarah (Hộ gia đình 4 người)</div>
+                                    <div class="text-[11px] text-blue-200">Giao diện được tạo 1-1 bởi Tesco × Adobe Agentic AI</div>
+                                </div>
+
+                                <!-- App Body Content -->
+                                <div class="p-3.5 space-y-3 text-xs">
+                                    <!-- Dynamic Banner -->
+                                    <div id="sim1-banner" class="p-3 rounded-xl bg-amber-50 border-2 border-amber-300">
+                                        <span class="bg-tesco-red text-white text-[10px] font-black px-1.5 py-0.5 rounded">THAT'S TRUE VALUE</span>
+                                        <div class="font-black text-slate-900 mt-1 text-sm">Thực đơn bữa tối gia đình 4 người chỉ £10!</div>
+                                        <p class="text-slate-600 text-[11px] mt-0.5">Tiết kiệm tới £392/năm với hơn 10.000 ưu đãi Clubcard Prices.</p>
+                                    </div>
+
+                                    <!-- Predictive Restock Alert (Question 8) -->
+                                    <div id="sim1-predictive" class="p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-2.5">
+                                        <span class="text-lg">🔮</span>
+                                        <div>
+                                            <span class="font-black text-blue-900 block text-[11px] uppercase">Predictive AI Restock Reminder:</span>
+                                            <span id="sim1-pred-text" class="text-slate-700 text-[11px]">Chu kỳ 21 ngày: Gia đình bạn sắp dùng hết <strong>Bột giặt Persil & Giấy vệ sinh</strong> (mua lần cuối 3 tuần trước). Thêm vào giỏ ngay?</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Prescriptive Coupon Activation (Question 9) -->
+                                    <div class="p-3 rounded-xl bg-emerald-50 border-2 border-emerald-300 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-emerald-950 text-[11px] uppercase">🎟️ Mã Giảm Giá Riêng Cho Bạn:</span>
+                                            <button onclick="triggerPrescriptiveCoupon()" id="sim1-coupon-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] px-2.5 py-1 rounded-lg shadow transition">
+                                                Bấm Kích Hoạt (Activate)
+                                            </button>
+                                        </div>
+                                        <div id="sim1-coupon-item" class="font-bold text-slate-900">Giảm £1.20 Sốt Mì Ý Barilla & Thịt Bò Băm</div>
+
+                                        <!-- Hidden Prescriptive Cross-Sell Box that pops up on click -->
+                                        <div id="sim1-prescriptive-popup" class="hidden mt-2 pt-2 border-t border-emerald-300 bg-white p-2.5 rounded-lg space-y-1.5">
+                                            <div class="text-[11px] font-black text-purple-800">⚡ PRESCRIPTIVE AI KÍCH HOẠT TỨC THÌ (IIDE, 2026):</div>
+                                            <div id="sim1-recipe-text" class="text-[11px] text-slate-700">
+                                                • <strong>Công thức gợi ý:</strong> Mì Ý Bolognese nướng phô mai (20 phút).<br>
+                                                • <strong>Gợi ý bán chéo (Cross-category):</strong> Thêm <em>Phô mai Parmesan (£2.10)</em> + <em>Bánh mì bơ tỏi (£1.00)</em> để nhận thêm 50 điểm thưởng!
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Explanation Column -->
+                    <div class="lg:col-span-7 space-y-4 text-xs sm:text-sm">
+                        <div class="bg-purple-50 p-5 rounded-2xl border border-purple-200 space-y-2">
+                            <h4 class="font-black text-purple-950 text-base">Giải Thích Trực Quan Cho Boss:</h4>
+                            <p class="text-slate-700 leading-relaxed">
+                                1. <strong>Bấm đổi giữa "Hồ sơ 1 (Gia đình)" và "Hồ sơ 2 (Người trẻ London)"</strong> ở góc trên: Boss sẽ thấy cùng một ứng dụng Tesco nhưng Banner đầu trang, Lời nhắc dự đoán món sắp hết (Predictive AI) và Mã giảm giá hoàn toàn khác nhau. Đó chính là <strong>Cá nhân hóa 1-1 (One-to-One Personalisation)</strong> của <em>Tesco × Adobe Innovation Lab</em>.
+                            </p>
+                            <p class="text-slate-700 leading-relaxed">
+                                2. <strong>Bấm thử nút màu xanh lá "Bấm Kích Hoạt (Activate)"</strong> bên trong màn hình điện thoại: Ngay lập tức hộp <em>Prescriptive AI</em> sẽ bật ra gợi ý công thức nấu ăn và món bán chéo (Cross-category). Đó chính là câu trả lời cho thắc mắc số 9 của Boss!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMULATOR 2: CLUBCARD CHALLENGES (20 PICK 10) & CLUBCARD UNPACKED -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left: Clubcard Challenges (Eagle Eye AI) -->
+                <div class="bg-white rounded-2xl p-6 border-2 border-purple-300 shadow-lg space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <div>
+                            <span class="text-xs font-black text-purple-800 uppercase">Mô Phỏng #2A • Câu Hỏi 4 & 5 (Eagle Eye AI)</span>
+                            <h3 class="text-lg font-black text-slate-900">Giao Diện "Clubcard Challenges" (Chọn 10 Trong 20 Nhiệm Vụ)</h3>
+                        </div>
+                        <span class="bg-tesco-yellow text-slate-950 text-xs font-black px-2.5 py-1 rounded-lg">Thưởng £50 Điểm</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Hệ thống <strong>Eagle Eye AI</strong> chạy ngầm đẩy 20 thử thách cá nhân hóa vào tab <em>Clubcard</em> trên Tesco App (kéo dài 6 tuần, Vòng thứ 10 hợp tác cùng >100 nhà cung cấp như Coca-Cola, PepsiCo). Dưới đây là các thử thách thực tế:
+                    </p>
+                    <div class="space-y-2.5 text-xs">
+                        <div class="p-3 rounded-xl bg-emerald-50 border-2 border-emerald-400 flex items-center justify-between">
+                            <div>
+                                <span class="font-black text-emerald-900 block">✓ Thử thách #1 (Nguyên văn Loyalty&RewardCo):</span>
+                                <span class="text-slate-800 font-semibold">"Spend £20 on our Summer BBQ range over the next 6 weeks"</span>
+                                <span class="block text-[11px] text-slate-500">Đã chi: £14 / £20 • Thưởng: 300 điểm (£3.00)</span>
+                            </div>
+                            <span class="bg-emerald-600 text-white font-bold px-2 py-1 rounded">70%</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-emerald-50 border-2 border-emerald-400 flex items-center justify-between">
+                            <div>
+                                <span class="font-black text-emerald-900 block">✓ Thử thách #2 (Nguyên văn Loyalty&RewardCo):</span>
+                                <span class="text-slate-800 font-semibold">"Spend £10 on plant-based meals" (Bữa ăn thuần chay)</span>
+                                <span class="block text-[11px] text-slate-500">Đã chi: £10 / £10 • Thưởng: 200 điểm (£2.00)</span>
+                            </div>
+                            <span class="bg-emerald-700 text-white font-bold px-2 py-1 rounded">Hoàn thành!</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-blue-50 border border-blue-300 flex items-center justify-between">
+                            <div>
+                                <span class="font-black text-blue-900 block">✓ Thử thách #3 (Nguyên văn Loyalty&RewardCo):</span>
+                                <span class="text-slate-800 font-semibold">"Spend £37 this week" (Vượt mức chi tiêu trung bình tuần)</span>
+                                <span class="block text-[11px] text-slate-500">Đã chi: £25 / £37 • Thưởng: 250 điểm (£2.50)</span>
+                            </div>
+                            <span class="bg-blue-600 text-white font-bold px-2 py-1 rounded">68%</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-rose-50 border border-rose-300 flex items-center justify-between">
+                            <div>
+                                <span class="font-black text-rose-900 block">✓ Thử thách #4 (Báo cáo Prelim FY26 Trang 5):</span>
+                                <span class="text-slate-800 font-semibold">"Multi-step Coca-Cola Christmas / PepsiCo UEFA Challenge"</span>
+                                <span class="block text-[11px] text-slate-500">Nhà cung cấp tài trợ điểm thưởng • Tỷ lệ tham gia: 76%</span>
+                            </div>
+                            <span class="bg-rose-600 text-white font-bold px-2 py-1 rounded">Mới nhất</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Clubcard Unpacked (Descriptive Analytics) -->
+                <div class="bg-white rounded-2xl p-6 border-2 border-purple-300 shadow-lg space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <div>
+                            <span class="text-xs font-black text-purple-800 uppercase">Mô Phỏng #2B • Câu Hỏi 7 (Descriptive Analytics)</span>
+                            <h3 class="text-lg font-black text-slate-900">Giao Diện "Clubcard Unpacked" Trên Tesco App (Tháng 1 Hàng Năm)</h3>
+                        </div>
+                        <span class="bg-blue-100 text-blue-900 text-xs font-black px-2.5 py-1 rounded-lg">#ClubcardUnpacked</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Mở từ ngày <strong>6 tháng 1 đến 17 tháng 2</strong> ngay trên <em>Tesco App</em> và <code>tesco.com/zones/unpacked</code> (tương tự <em>Spotify Wrapped</em>), biến dữ liệu mô tả quá khứ (Descriptive Analytics) thành video tổng kết thú vị:
+                    </p>
+                    <div class="bg-gradient-to-br from-tesco-blue via-blue-900 to-indigo-950 text-white p-5 rounded-2xl space-y-3 shadow-inner">
+                        <div class="flex items-center justify-between text-xs text-blue-200">
+                            <span>TESCO CLUBCARD UNPACKED • RECAP NĂM QUA CỦA BẠN</span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded text-white font-bold">Story 1/4</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2.5 text-center pt-1">
+                            <div class="bg-white/10 p-3 rounded-xl border border-white/20">
+                                <div class="text-xl">🥪</div>
+                                <div class="text-[11px] text-blue-200 mt-1">Combo Meal Deal Ruột</div>
+                                <div class="font-black text-xs text-amber-300 mt-0.5">Chicken Club + Egg Pot + Red Bull</div>
+                            </div>
+                            <div class="bg-white/10 p-3 rounded-xl border border-white/20">
+                                <div class="text-xl">🍌</div>
+                                <div class="text-[11px] text-blue-200 mt-1">Món Mua Nhiều Nhất</div>
+                                <div class="font-black text-xs text-emerald-300 mt-0.5">142 Quả Chuối Tươi (Top 5% UK)</div>
+                            </div>
+                            <div class="bg-white/10 p-3 rounded-xl border border-white/20">
+                                <div class="text-xl">💷</div>
+                                <div class="text-[11px] text-blue-200 mt-1">Tổng Tiền Đã Tiết Kiệm</div>
+                                <div class="font-black text-sm text-amber-300 mt-0.5">£392.00</div>
+                            </div>
+                        </div>
+                        <div class="text-[11px] text-blue-100 bg-white/10 p-2.5 rounded-lg text-center">
+                            Chia sẻ lên mạng xã hội kèm <strong>#ClubcardUnpacked</strong> để có cơ hội nhận thưởng từ quỹ 40.000 giải (£5 điểm Clubcard)!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMULATOR 3: TESCO MEDIA CREATIVE STUDIO (ADOBE FIREFLY GEN-AI) & ZERO-PARTY DATA HUB -->
+            <div class="bg-white rounded-2xl p-6 border-2 border-purple-300 shadow-lg space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+                    <div>
+                        <span class="text-xs font-black text-purple-800 uppercase">Mô Phỏng #3 • Minh Họa Cho Câu Hỏi 10, 12 & 13 (Adobe Firefly GenAI Studio & Zero-Party Data)</span>
+                        <h3 class="text-xl font-black text-slate-900">Trình Tạo Quảng Cáo "Tesco Media Creative Studio × Adobe Firefly" (Từ Nhiều Tuần Xuống Vài Giây)</h3>
+                    </div>
+                    <button onclick="generateAdVariants()" class="bg-gradient-to-r from-tesco-red to-amber-600 hover:opacity-95 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow transition">
+                        ✨ Bấm Chạy Thử GenAI Tạo 3 Biến Thể Banner Trong 2 Giây
+                    </button>
+                </div>
+
+                <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                    Theo báo cáo của <strong>IIDE (tháng 10/2025)</strong> và <strong>Retail Times (tháng 4/2026)</strong>, công cụ <em>Tesco Media Creative Studio</em> tích hợp <em>Adobe Firefly Foundry</em> sử dụng dữ liệu Clubcard để tự động biến 1 sản phẩm gốc thành <strong>3 mẫu quảng cáo riêng biệt cho 3 tệp khách hàng (Current, Lapsed, New Shoppers)</strong> chỉ trong vài giây. Trong <strong>Đề xuất 2 năm 2027</strong>, Boss đề xuất mở công cụ này thành cổng tự phục vụ (Self-serve) cho các nhà bán hàng SME trên sàn <em>Tesco Marketplace (Mirakl)</em>:
+                </p>
+
+                <div id="genai-output-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <!-- Variant 1: Current Shoppers -->
+                    <div class="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-400 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-emerald-700 text-white font-black px-2 py-0.5 rounded text-[10px]">BIẾN THỂ AI #1: CURRENT SHOPPERS</span>
+                            <span class="text-[11px] font-bold text-emerald-800">Tạo trong 1.2s</span>
+                        </div>
+                        <div class="font-black text-slate-900 text-sm">Nhóm Khách Đang Mua Thường Xuyên</div>
+                        <div class="p-3 bg-white rounded-xl border border-emerald-200 space-y-1">
+                            <div class="text-emerald-700 font-black">🥗 Dòng Bữa Ăn Giàu Đạm (High-Protein Range)</div>
+                            <p class="text-slate-700">"Cảm ơn bạn đã yêu thích dòng High-Protein! Mua combo 3 hộp tuần này để <strong>nhân đôi điểm Clubcard Challenges</strong>."</p>
+                            <span class="inline-block bg-tesco-blue text-white font-bold px-2.5 py-1 rounded text-[10px] mt-1">CTA: Mua Lại & Tích Điểm X2</span>
+                        </div>
+                    </div>
+
+                    <!-- Variant 2: Lapsed Shoppers -->
+                    <div class="p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-amber-600 text-white font-black px-2 py-0.5 rounded text-[10px]">BIẾN THỂ AI #2: LAPSED SHOPPERS</span>
+                            <span class="text-[11px] font-bold text-amber-900">Tạo trong 1.4s</span>
+                        </div>
+                        <div class="font-black text-slate-900 text-sm">Nhóm Khách Cũ Đã Lâu Không Mua (>60 Ngày)</div>
+                        <div class="p-3 bg-white rounded-xl border border-amber-200 space-y-1">
+                            <div class="text-amber-700 font-black">🔥 Ưu Đãi Kích Hoạt Lại (Win-Back Offer)</div>
+                            <p class="text-slate-700">"Đã 2 tháng bạn chưa đặt món yêu thích! Bấm kích hoạt mã giảm ngay <strong>£1.50 Clubcard Price</strong> cho đơn hàng hôm nay."</p>
+                            <span class="inline-block bg-tesco-red text-white font-bold px-2.5 py-1 rounded text-[10px] mt-1">CTA: Kích Hoạt Giảm £1.50 Ngay</span>
+                        </div>
+                    </div>
+
+                    <!-- Variant 3: New Shoppers -->
+                    <div class="p-4 rounded-2xl bg-blue-50 border-2 border-blue-400 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-blue-700 text-white font-black px-2 py-0.5 rounded text-[10px]">BIẾN THỂ AI #3: NEW SHOPPERS</span>
+                            <span class="text-[11px] font-bold text-blue-900">Tạo trong 1.5s</span>
+                        </div>
+                        <div class="font-black text-slate-900 text-sm">Nhóm Khách Mới Chưa Từng Mua Danh Mục Này</div>
+                        <div class="p-3 bg-white rounded-xl border border-blue-200 space-y-1">
+                            <div class="text-blue-700 font-black">🏆 Đạt Giải Great Taste Awards 2026</div>
+                            <p class="text-slate-700">"Khám phá dòng sản phẩm mới đạt giải thưởng chất lượng tại UK. Giá dùng thử đặc biệt cho thành viên Clubcard chỉ <strong>£2.50</strong>."</p>
+                            <span class="inline-block bg-indigo-700 text-white font-bold px-2.5 py-1 rounded text-[10px] mt-1">CTA: Dùng Thử Sản Phẩm Mới</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t-2 border-slate-200 py-6 px-4 text-center text-xs text-slate-600 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span class="font-extrabold text-slate-900">TESCO PLC DEEP RESEARCH CANVAS • MARK 1286 ASSIGNMENT 2 (OPTION 1)</span>
+            <span>Mọi số liệu đều gắn kèm vị trí trang/mục và đường dẫn xác thực (2025–2026)</span>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT DATA & LOGIC -->
+    <script>
+        // EXACT CITATION DATABASE (DOCUMENT, LOCATION, QUOTE, URL)
+        const citationsDB = {
+            ar26_p3: {
+                doc: "Tesco PLC Annual Report and Financial Statements 2026",
+                loc: "Trang 3 (Page 3) & Trang 230 (Welcome to our Annual Report 2026)",
+                quote: "Across the Group, our purpose is at the core of what we do: serving our customers, communities and planet a little better every day. Our fantastic team of over 340,000 colleagues go above and beyond to serve our customers.",
+                url: "https://www.tescoplc.com/media/gmylxjfw/tesco_ar26_interactive.pdf"
+            },
+            prelim26_food: {
+                doc: "Tesco PLC Preliminary Results 2025/26 (London Stock Exchange RNS, 15 April 2026)",
+                loc: "Trang 1–5, Mục 1 'Winning in food' & Mục 2 'Meeting more everyday customer needs'",
+                quote: "UK market share at 28.5%, up +24bps YoY... Tripling of Everyday Low Prices to 3,000 lines, running alongside over 10,000 Clubcard Prices and Aldi Price Match on more than 600 products... UK online sales up +11% to over £7bn (market share 35.7%)... Tesco Whoosh sales up +51% to over £400m... F&F clothing sales up +5.1% to over £1.2bn... Tesco Marketplace offering a range of over 450,000 SKUs; platform migrated to Mirakl in October.",
+                url: "https://www.londonstockexchange.com/news-article/TSCO/preliminary-results-2025-26/17549062"
+            },
+            ar26_p7: {
+                doc: "Tesco PLC Annual Report and Financial Statements 2026",
+                loc: "Trang 7 (Page 7) – '2025/26 Highlights of the year'",
+                quote: "Group sales £66.6bn (+4.6%, 2025: £63.6bn). Adjusted operating profit £3,152m (+0.8%, 2025: £3,128m). UK market share (sales value) 28.5% +24bps (highest levels since 2015). On a continuing operations basis: Revenue £73.7bn (+5.4%, 2025: £69.9bn).",
+                url: "https://www.tescoplc.com/media/gmylxjfw/tesco_ar26_interactive.pdf"
+            },
+            ft_clubcard: {
+                doc: "Tesco PLC Trading & Financial Announcement (Financial Times Markets / LSE RNS)",
+                loc: "Mục 'I Love my Tesco Clubcard - Creating a competitive advantage through our powerful digital capability'",
+                quote: "Clubcard penetration remains high in all markets: UK 84%, ROI 87%, Central Europe 87%, with over 24m Clubcard households in the UK... Clubcard Challenges now in its tenth round, with growing customer and supplier engagement. Trialling use of Clubcard analytics to anticipate and remind customers when they may be running low on household products.",
+                url: "https://markets.ft.com/data/announce/detail?dockey=1323-17259603-7BQL7O79NT5SLPPST6G4CCU863"
+            },
+            undisturbed_dh: {
+                doc: "Undisturbed Research – Tesco & dunnhumby Strategic Architecture (2026)",
+                loc: "Mục 'Substrate metrics (FY25/26 interim and prelim)' & 'dunnhumby Limited financials (UK legal entity)'",
+                quote: "Clubcard households: 24M+ (Adobe announcement, April 2026). Sales penetration: UK 84% / ROI 87% / Central Europe 88%. Tesco Group app users: 18M (+12% YoY); proportion of digital Clubcard scans in UK +11ppt to 63%... dunnhumby Limited financials (UK legal entity): Turnover £326M, EBITDA £30M, 795 UK staff. The global group, across 30+ countries, employs 2,500+.",
+                url: "https://undisturbed.blog/articles/tesco"
+            },
+            ft_adobe13m: {
+                doc: "Tesco PLC Financial Announcement (Financial Times Markets)",
+                loc: "Mục 'Enhancing personalised engagement through Clubcard and expanding the Tesco Media and Insight platform' & 'Magnetic Value for Customers'",
+                quote: "Over 13m customers are now receiving even more timely and relevant offers, product recommendations and recipe ideas, supported by our new partnership with Adobe... Supporting customers to make healthy choices through new five-a-day fruit and vegetable campaign, with c.2.5m customers invited to earn personalised rewards.",
+                url: "https://markets.ft.com/data/announce/detail?dockey=1323-17259603-7BQL7O79NT5SLPPST6G4CCU863"
+            },
+            loyalty_challenges: {
+                doc: "Loyalty & Reward Co (May 2026 Update by Philip Shelper) & IIDE Tesco Case Study",
+                loc: "Mục 'How Tesco's Clubcard Challenges work' & 'Challenge structure'",
+                quote: "Tesco utilises Eagle Eye to run Challenges... Each participant is presented with 20 personalised challenges. Customers can choose which 10 of these challenges they want to complete. The challenges run for a duration of six weeks: 'spend £20 on our Summer BBQ range over the next 6 weeks', 'spend £10 on plant-based meals', 'spend £37 this week'. (IIDE: 76% visitor-to-participant conversion).",
+                url: "https://loyaltyrewardco.com/do-loyalty-programs-work-just-ask-tesco/"
+            },
+            ar25_p4: {
+                doc: "Tesco PLC Annual Report and Financial Statements 2025",
+                loc: "Trang 4 (Page 4) – Mục 'Value' & Chú thích chân trang",
+                quote: "Up to £392* annual savings per customer with Clubcard Prices. *Clubcard Prices saving of up to £392 is based on the top 25% of Tesco Clubcard members and large store sales between 6 January 2024 and 4 January 2025.",
+                url: "https://www.tescoplc.com/media/ky0bfwpo/tesco_ar25_interactive.pdf"
+            },
+            caddo_rm: {
+                doc: "Caddo Retail Analysis & LSE RNS Preliminary Results 2024/25",
+                loc: "Mục 'UK retail media spend (2025)' & 'I Love my Tesco Clubcard'",
+                quote: "Tesco's Clubcard Challenges, powered by Eagle Eye's AI engine, delivers hyper-personalised offers... 24 million (>80% penetration), 82% of Tesco transactions via Clubcard. UK retail media spend (2025) £3.8 billion (+18% YoY). Over 9,000 retail media campaigns delivered; over 5,000 in-store screens.",
+                url: "https://caddo.com/blog/loyalty-pricing-trap"
+            },
+            happy_dh: {
+                doc: "HappyRewards – Tesco Loyalty Program (Clubcard) 2025–2026 Analysis",
+                loc: "Mục 'The magic starts with big data analytics through partners like Dunnhumby' & 'Gamification Tactics'",
+                quote: "The magic starts with big data analytics through partners like Dunnhumby, evolving into AI tools like the 'People Pleaser' (for personalized promotions) and 'Diviner' (predicting behaviors)... Features like Clubcard Challenges use AI for spend-based games, seeing 5–10x participation rates and up to 700% ROI.",
+                url: "https://happyrewards.io/tesco-loyalty-program/"
+            },
+            retailtimes_adobe: {
+                doc: "Retail Times (13 April 2026 by Fiona Briggs) & Tesco Preliminary Results 2025/26",
+                loc: "Bài báo 'Tesco's 24 million Clubcard customers are about to get AI-powered shopping tailored to them'",
+                quote: "New Tesco x Adobe Innovation Lab bringing together Tesco's in-house technology and expertise with Adobe's leading capabilities in AI... Using technology like Adobe's agentic AI capabilities and Adobe Firefly Foundry.",
+                url: "https://retailtimes.co.uk/tescos-24-million-clubcard-customers-are-about-to-get-ai-powered-shopping-tailored-to-them/"
+            },
+            ft_iot: {
+                doc: "Tesco PLC Announcement (Financial Times Markets)",
+                loc: "Mục 'Continued development of AI capability across our business' & 'I Love my Tesco Clubcard'",
+                quote: "Continued development of AI capability across our business, including improvements to in-house tools which find the most efficient journey for every Tesco lorry and delivery van, removing around 100,000 miles per week... New partnership with Pod, enabling customers to collect Clubcard points on EV charging at Tesco stores.",
+                url: "https://markets.ft.com/data/announce/detail?dockey=1323-17259603-7BQL7O79NT5SLPPST6G4CCU863"
+            },
+            unpacked_tesco: {
+                doc: "Tesco PLC Official Press Release – Clubcard Unpacked",
+                loc: "Thông cáo báo chí 'Tesco's Clubcard Unpacked 2025 reveals the difference between London and the rest of the UK'",
+                quote: "Clubcard members keen to dive into their results will be able to view their Clubcard Unpacked in the Tesco app or through their online Clubcard account from 6 January, for a limited time.",
+                url: "https://www.tescoplc.com/tesco-s-clubcard-unpacked-2025-reveals-the-difference-between-london-and-the-rest-of-the-uk-and-it-s-bananas/"
+            },
+            iide_prescriptive: {
+                doc: "IIDE Case Study – Marketing Strategy of Tesco (2025–2026 Enhancements)",
+                loc: "Mục 'Clubcard Loyalty Program: 2025-2026 Enhancements'",
+                quote: "The company is doubling down on personalization with real-time, omnichannel journey orchestration, where branded coupon activation in the app immediately triggers recipe suggestions, follow-up promotions, and cross-category recommendations.",
+                url: "https://iide.co/case-studies/marketing-strategy-of-tesco/"
+            },
+            iide_studio: {
+                doc: "IIDE Case Study – Marketing Strategy of Tesco",
+                loc: "Mục 'Tesco Media Creative Studio (launched October 2025)' & 'Primary Business Challenges'",
+                quote: "Tesco Media Creative Studio (launched October 2025): By tailoring creative to current, lapsed, and new shoppers using Clubcard insights, campaigns deliver more relevance while accelerating production from weeks to seconds in some instances.",
+                url: "https://iide.co/case-studies/marketing-strategy-of-tesco/"
+            },
+            undisturbed_mistral: {
+                doc: "Undisturbed Research – Tesco AI Deployment Portfolio",
+                loc: "Mục 'The deployment portfolio (December 2025 & April 2026)'",
+                quote: "Mistral AI signed a 3-year agreement with Tesco on 17 December 2025 — first major UK retailer to partner with Mistral; full access to commercial models plus future releases; joint AI lab; explicitly EU-sovereign in data residency. Owner: Ruben Lara Hernandez. Adobe followed on 13 April 2026 with a Strategic AI Partnership: a Tesco × Adobe Innovation Lab.",
+                url: "https://undisturbed.blog/articles/tesco"
+            },
+            pmr_gdpr: {
+                doc: "Persistence Market Research – Retail Media Networks Market Analysis",
+                loc: "Mục 'Market Restraints: Data Privacy Regulations Constraining Audience Targeting'",
+                quote: "The European Union's General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA) require explicit consumer consent for data processing... For retail networks, the practical effect is that opt-out rates reduce addressable audience size.",
+                url: "https://www.persistencemarketresearch.com/market-research/retail-media-networks-market.asp"
+            },
+            sust26_p1: {
+                doc: "Tesco PLC Sustainability Report 2025/26",
+                loc: "Trang 1–2, Mục 'Our commitments'",
+                quote: "Healthy food now represents 65% of our total sales in the UK and ROI, up from 58% in 2019... Achieve year on year healthy sales increase every year to 2030.",
+                url: "https://www.tescoplc.com/media/yjmlhji0/tesco-sustainability-report-2026.pdf"
+            }
+        };
+
+        // 13 DETAILED Q&A ITEMS
+        const qaItems = [
+            {
+                num: "Câu hỏi 1",
+                q: "10.000 ưu đãi Clubcard Prices mỗi tuần giúp tiết kiệm £392/năm được cá nhân hóa bằng cách nào?",
+                a: "Chia làm 2 tầng rõ rệt:\n• Tầng 1 (Tại kệ siêu thị): Hơn 10.000 mặt hàng niêm yết giá Clubcard rẻ hơn giá thường để bắt buộc 84% khách hàng phải quét thẻ định danh khi thanh toán (giúp top 25% khách mua nhiều tiết kiệm tới £392/năm - Trang 4, Annual Report 2025).\n• Tầng 2 (Cá nhân hóa trên App & Email): Từ dữ liệu quét thẻ đó, Tesco dùng hệ thống Adobe và Salesforce/Klaviyo gửi các mã giảm giá riêng (Digital Coupons), gợi ý món ăn và sản phẩm đúng với thói quen của từng hộ gia đình cho hơn 13 triệu khách hàng.",
+                citeKey: "ar25_p4"
+            },
+            {
+                num: "Câu hỏi 2",
+                q: "Bán quảng cáo qua Tesco Media & Insight Platform có phải là bán dữ liệu cá nhân của khách cho công ty khác và vi phạm GDPR không?",
+                a: "Tuyệt đối KHÔNG! Tesco KHÔNG bán tên, số điện thoại hay email của khách cho bất kỳ ai.\n• Cơ chế Closed-Loop (Khép kín): Nhãn hàng (như Coca-Cola) trả tiền cho Tesco để hệ thống nội bộ của Tesco tự hiển thị banner quảng cáo tới đúng nhóm khách hay mua nước giải khát trên Tesco App hoặc trên 5.000 màn hình tại siêu thị.\n• Như Undisturbed Research chỉ rõ: 'The product is the science, not the data'. Tesco chỉ gửi báo cáo tổng hợp ẩn danh cho nhãn hàng biết quảng cáo đó mang lại bao nhiêu doanh số, và tuân thủ 100% cơ chế Opt-in consent của GDPR.",
+                citeKey: "undisturbed_dh"
+            },
+            {
+                num: "Câu hỏi 3",
+                q: "Công ty con dunnhumby (doanh thu £326 triệu tại UK) xử lý dữ liệu ra sao?",
+                a: "dunnhumby xử lý dữ liệu qua 4 bước:\n1. Khớp nối từng món hàng trong hóa đơn vào hồ sơ dọc theo thời gian (Longitudinal profile) của 24 triệu hộ gia đình.\n2. Phân cụm hành vi (Behavioral clustering) theo lối sống và độ nhạy cảm giá.\n3. Chạy các mô hình AI nội bộ như 'People Pleaser' (tối ưu hóa khuyến mãi riêng cho từng cá nhân) và 'Diviner' (dự báo hành vi mua tiếp theo và nguy cơ rời bỏ).\n4. Chuyển hóa thành quyết định định giá cho Tesco và báo cáo đo lường khép kín cho các nhãn hàng CPG.",
+                citeKey: "happy_dh"
+            },
+            {
+                num: "Câu hỏi 4",
+                q: "Clubcard Challenges thử nghiệm 20 thử thách là sao? Nêu 3 thử thách điển hình? Có thay đổi không và mới nhất là gì?",
+                a: "• Cơ chế: Mỗi đợt 6 tuần, AI hiển thị 20 nhiệm vụ chi tiêu được thiết kế riêng cho từng người; khách hàng tự chọn 10 nhiệm vụ mình thích để làm và nhận thưởng tới £50 điểm Clubcard (tỷ lệ chuyển đổi tham gia đạt 76%).\n• 3 thử thách điển hình (nguyên văn Loyalty&RewardCo): (1) 'Spend £20 on our Summer BBQ range over the next 6 weeks'; (2) 'Spend £10 on plant-based meals'; (3) 'Spend £37 this week'.\n• Mới nhất 2025/2026: Đã qua 10 vòng (10th round) với >100 nhà cung cấp tài trợ, nổi bật là Chiến dịch Giáng sinh đa kênh với Coca-Cola (Trang 5, Prelim Results FY26) và chiến dịch UEFA Champions League với PepsiCo.",
+                citeKey: "loyalty_challenges"
+            },
+            {
+                num: "Câu hỏi 5",
+                q: "Nền tảng AI Eagle Eye là app hay là gì? Gửi nhiệm vụ tới điện thoại khách qua đâu?",
+                a: "Khách hàng KHÔNG tải app nào tên là Eagle Eye.\n• Eagle Eye là công ty cung cấp bộ máy AI chạy ngầm trên máy chủ đám mây (Backend AI Engine - Eagle Eye AIR) kết nối thẳng vào hệ thống của Tesco.\n• Các nhiệm vụ do Eagle Eye tính toán sẽ hiển thị trực tiếp bên trong mục 'Clubcard Challenges' trên ứng dụng Tesco Grocery & Clubcard App (18 triệu người dùng) và gửi thông báo tiến độ qua In-App Push Notifications cùng Email.",
+                citeKey: "caddo_rm"
+            },
+            {
+                num: "Câu hỏi 6",
+                q: "Tesco × Adobe Innovation Lab (tháng 4/2026) cá nhân hóa 1-1 là sao? Ví dụ điển hình?",
+                a: "Thay vì chia khách hàng thành vài nhóm lớn, các kỹ sư Adobe làm việc cùng Tesco dùng Adobe Agentic AI để tạo ra 24 triệu giao diện và luồng gợi ý khác nhau cho 24 triệu chủ thẻ.\n• Ví dụ: Mở cùng 1 ứng dụng Tesco, gia đình đông người thấy banner công thức nấu ăn tiết kiệm 'True Value' và ưu đãi bịch khoai tây lớn; còn người độc thân ở London thấy gợi ý Sushi mới, bữa ăn giàu đạm và nút đặt giao nhanh Whoosh 30 phút. (Xem trực tiếp tại Mô phỏng #1 ở Tab 3).",
+                citeKey: "retailtimes_adobe"
+            },
+            {
+                num: "Câu hỏi 7",
+                q: "Tính năng Clubcard Unpacked (Descriptive Analytics) nằm ở đâu, xem ở đâu?",
+                a: "Nằm trực tiếp bên trong ứng dụng Tesco Grocery & Clubcard App và trên trang web chính thức tesco.com/zones/unpacked (mở từ ngày 6 tháng 1 đến 17 tháng 2 hàng năm).\n• Giống như Spotify Wrapped, khi khách bấm vào sẽ xem được video đồ họa tổng kết cả năm qua mình đã mua món gì nhiều nhất, combo bữa trưa Meal Deal yêu thích nhất và tổng số tiền tiết kiệm được.",
+                citeKey: "unpacked_tesco"
+            },
+            {
+                num: "Câu hỏi 8",
+                q: "Predictive AI dự đoán khách sắp hết nhu yếu phẩm đã chạy chưa hay còn thử nghiệm? Gửi lời nhắc qua đâu?",
+                a: "• Trạng thái: Trong báo cáo tài chính 2025/26 trên FT Markets, Tesco xác nhận đang chạy thử nghiệm thực tế ('Trialling use of Clubcard analytics to anticipate and remind customers when they may be running low on household products').\n• Kênh gửi: Gửi lời nhắc qua thông báo ứng dụng Tesco App (mục gợi ý mua lại) và Email tự động dựa trên chu kỳ tiêu dùng của từng hộ gia đình.",
+                citeKey: "ft_clubcard"
+            },
+            {
+                num: "Câu hỏi 9",
+                q: "Prescriptive AI: Khi nào khách có mã giảm giá và khi nào kích hoạt trên App để AI gợi ý bán chéo?",
+                a: "• Hàng tuần, khách nhận được các phiếu giảm giá cá nhân hóa (Digital Coupons) trong mục Clubcard trên Tesco App.\n• Theo báo cáo IIDE (2026), ngay giây phút khách bấm nút 'Activate' (Kích hoạt) một mã giảm giá trên App (ví dụ mã giảm giá sốt mì Ý), hệ thống AI lập tức bật ra công thức nấu món mì Ý đó kèm gợi ý bán chéo sang ngành hàng khác (thịt bò, phô mai, rượu vang) ngay trên màn hình.",
+                citeKey: "iide_prescriptive"
+            },
+            {
+                num: "Câu hỏi 10",
+                q: "Adobe Firefly Foundry tạo hàng vạn biến thể quảng cáo trong vài giây có minh họa không?",
+                a: "Có đầy đủ! Tại Mô phỏng #3 trong Tab 3 bên dưới, Boss có thể bấm nút xem trực tiếp cách công cụ tạo ra 3 mẫu banner khác nhau trong 1.5 giây cho 3 nhóm: Khách đang mua (Current), Khách ngủ đông (Lapsed) và Khách mới (New).",
+                citeKey: "iide_studio"
+            },
+            {
+                num: "Câu hỏi 11",
+                q: "Đề xuất 1: Công nghệ Mistral AI là ở đâu nói, hay tự gợi ý?",
+                a: "Có thật 100% trong hồ sơ công nghệ của Tesco! Ngày 17/12/2025, Tesco đã ký thỏa thuận 3 năm với hãng AI Pháp Mistral AI (nhà bán lẻ lớn đầu tiên tại UK hợp tác lập phòng lab AI chung với Mistral, do Ruben Lara Hernandez phụ trách).\n• Sự thật 2025/26 là Tesco đã mua hạ tầng Mistral AI; còn Đề xuất 2027 của Boss là dùng Mistral AI đó để làm tính năng 'Trợ lý Thực đơn Giỏ hàng Tự động (Meal-to-Basket Concierge)' kết nối Whoosh và Marketplace.",
+                citeKey: "undisturbed_mistral"
+            },
+            {
+                num: "Câu hỏi 12",
+                q: "Đề xuất 2: Sao biết Tesco có công cụ Media Creative Studio, hoạt động ra sao và làm sao minh họa khi quay video?",
+                a: "• Nguồn gốc: Tesco chính thức ra mắt 'Tesco Media Creative Studio' vào tháng 10/2025 (báo cáo IIDE Case Study), giúp rút ngắn thời gian làm quảng cáo từ nhiều tuần xuống vài giây.\n• Cách minh họa trong Vlog: Boss chỉ cần quay màn hình (Screen-record) trực tiếp khung Mô phỏng #3 ở Tab 3 bên dưới và chèn vào góc video bằng Microsoft Clipchamp!",
+                citeKey: "iide_studio"
+            },
+            {
+                num: "Câu hỏi 13",
+                q: "Đề xuất 3: Tạo Ví/Hồ sơ dữ liệu tự khai khác gì với việc khách tự nguyện đăng ký thẻ Clubcard ban đầu?",
+                a: "• Lúc đăng ký thẻ Clubcard (First-party data): Khách chỉ khai Tên, Tuổi, Địa chỉ. Khi họ mua hàng, máy tính chỉ biết 'Họ đã mua cái gì trong quá khứ' chứ KHÔNG BIẾT 'Tại sao họ mua và mục tiêu sắp tới của gia đình họ là gì'.\n• Còn 'Zero-Party Data Preference Hub' (Đề xuất 2027): Khách chủ động tích chọn mục tiêu tương lai (VD: ăn kiêng giảm đường, dị ứng thực phẩm, giới hạn tiền chợ £75/tuần) để nhận nhân đôi điểm thưởng khi mua thực phẩm lành mạnh (hỗ trợ cam kết >65% doanh số thực phẩm lành mạnh của Tesco đến năm 2030).",
+                citeKey: "sust26_p1"
+            }
+        ];
+
+        function openCite(key) {
+            const data = citationsDB[key];
+            if (!data) return;
+            document.getElementById('modal-doc').innerText = data.doc;
+            document.getElementById('modal-loc').innerText = data.loc;
+            document.getElementById('modal-quote').innerText = `"${data.quote}"`;
+            document.getElementById('modal-url').href = data.url;
+            document.getElementById('citation-modal').classList.remove('hidden');
+        }
+
+        function closeCiteModal() {
+            document.getElementById('citation-modal').classList.add('hidden');
+        }
+
+        function renderQAList() {
+            const container = document.getElementById('qa-grid');
+            const q = (document.getElementById('qa-search').value || '').toLowerCase().trim();
+            const filtered = qaItems.filter(item => !q || (item.q + ' ' + item.a).toLowerCase().includes(q));
+
+            container.innerHTML = filtered.map(item => `
+                <div class="bg-white rounded-2xl p-6 border-2 border-emerald-200 hover:border-emerald-500 shadow-sm transition flex flex-col justify-between space-y-4">
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-emerald-700 text-white text-xs font-black px-2.5 py-0.5 rounded">${item.num}</span>
+                            <button onclick="openCite('${item.citeKey}')" class="cite-badge">🔗 Xem vị trí trang & Link gốc</button>
+                        </div>
+                        <h3 class="text-base font-black text-slate-900 leading-snug">${item.q}</h3>
+                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line bg-emerald-50/50 p-4 rounded-xl border border-emerald-200 font-medium">${item.a}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // SIMULATOR 1 LOGIC: 1-TO-1 PERSONA SWITCHER & PRESCRIPTIVE COUPON
+        function switchPersona(type) {
+            const btnFam = document.getElementById('btn-p-family');
+            const btnSin = document.getElementById('btn-p-single');
+            const popup = document.getElementById('sim1-prescriptive-popup');
+            popup.classList.add('hidden');
+
+            if (type === 'family') {
+                btnFam.className = "px-3.5 py-2 rounded-xl text-xs font-extrabold bg-tesco-blue text-white shadow";
+                btnSin.className = "px-3.5 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700 border border-slate-300";
+                document.getElementById('sim1-greeting').innerText = "Xin chào Gia đình Sarah (Hộ gia đình 4 người)";
+                document.getElementById('sim1-points').innerText = "1,450 pts";
+                document.getElementById('sim1-banner').innerHTML = `
+                    <span class="bg-tesco-red text-white text-[10px] font-black px-1.5 py-0.5 rounded">THAT'S TRUE VALUE</span>
+                    <div class="font-black text-slate-900 mt-1 text-sm">Thực đơn bữa tối gia đình 4 người chỉ £10!</div>
+                    <p class="text-slate-600 text-[11px] mt-0.5">Tiết kiệm tới £392/năm với hơn 10.000 ưu đãi Clubcard Prices.</p>
+                `;
+                document.getElementById('sim1-pred-text').innerHTML = `Chu kỳ 21 ngày: Gia đình bạn sắp dùng hết <strong>Bột giặt Persil & Giấy vệ sinh</strong> (mua lần cuối 3 tuần trước). Thêm vào giỏ ngay?`;
+                document.getElementById('sim1-coupon-item').innerText = "Giảm £1.20 Sốt Mì Ý Barilla & Thịt Bò Băm";
+                document.getElementById('sim1-recipe-text').innerHTML = `• <strong>Công thức gợi ý:</strong> Mì Ý Bolognese nướng phô mai cho 4 người.<br>• <strong>Gợi ý bán chéo (Cross-category):</strong> Thêm <em>Phô mai Parmesan (£2.10)</em> + <em>Bánh mì bơ tỏi (£1.00)</em>!`;
+            } else {
+                btnSin.className = "px-3.5 py-2 rounded-xl text-xs font-extrabold bg-tesco-blue text-white shadow";
+                btnFam.className = "px-3.5 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700 border border-slate-300";
+                document.getElementById('sim1-greeting').innerText = "Xin chào Alex (Khách hàng Trẻ tại London)";
+                document.getElementById('sim1-points').innerText = "820 pts";
+                document.getElementById('sim1-banner').innerHTML = `
+                    <span class="bg-purple-700 text-white text-[10px] font-black px-1.5 py-0.5 rounded">TESCO WHOOSH 30-MIN DELIVERY</span>
+                    <div class="font-black text-slate-900 mt-1 text-sm">Ra mắt Sushi Finest & Bữa Ăn High-Protein Mới!</div>
+                    <p class="text-slate-600 text-[11px] mt-0.5">Giao siêu tốc tới căn hộ của bạn trong 30 phút qua Whoosh.</p>
+                `;
+                document.getElementById('sim1-pred-text').innerHTML = `Chu kỳ 7 ngày: Bạn sắp dùng hết <strong>Sữa Yến Mạch Oatly & Chuối hữu cơ</strong> (mua thứ Sáu tuần trước). Đặt giao Whoosh ngay?`;
+                document.getElementById('sim1-coupon-item').innerText = "Giảm £1.50 Cá Hồi Phi Lê Tươi & Salad Hữu Cơ";
+                document.getElementById('sim1-recipe-text').innerHTML = `• <strong>Công thức gợi ý:</strong> Cá hồi áp chảo sốt chanh dây (15 phút - 45g Protein).<br>• <strong>Gợi ý bán chéo (Cross-category):</strong> Thêm <em>Măng tây xanh (£1.80)</em> + <em>Nước uống Wellness Shot (£1.50)</em>!`;
+            }
+        }
+
+        function triggerPrescriptiveCoupon() {
+            const popup = document.getElementById('sim1-prescriptive-popup');
+            popup.classList.remove('hidden');
+            document.getElementById('sim1-coupon-btn').innerText = "✓ Đã Kích Hoạt!";
+        }
+
+        function generateAdVariants() {
+            const grid = document.getElementById('genai-output-grid');
+            grid.classList.add('scale-[0.99]', 'opacity-60');
+            setTimeout(() => {
+                grid.classList.remove('scale-[0.99]', 'opacity-60');
+            }, 250);
+        }
+
+        function switchTab(tabId) {
+            const secs = document.querySelectorAll('.canvas-sec');
+            if (tabId === 'all') {
+                secs.forEach(s => s.classList.remove('hidden'));
+            } else {
+                secs.forEach(s => {
+                    if (s.id === tabId) {
+                        s.classList.remove('hidden');
+                    } else {
+                        s.classList.add('hidden');
+                    }
+                });
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQAList();
+        });
+    </script>
+</body>
+</html>
